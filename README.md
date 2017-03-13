@@ -12,7 +12,7 @@ A TensorFlow implementation of ResNet-18(https://arxiv.org/abs/1512.03385)
 
 <b>How To Run</b>
 
-0. (Optional) Convert torch .t7 into tensorflow ckpt
+- (Optional) Convert torch .t7 into tensorflow ckpt
 ```
 # Download torch
 wget https://d2j0dndfm35trm.cloudfront.net/resnet-18.t7
@@ -21,9 +21,9 @@ wget https://d2j0dndfm35trm.cloudfront.net/resnet-18.t7
 python extract_torch_t7.py
 ```
 1. Modify `train_scratch.sh` or `train.sh` to have valid values of following arguments
-  1. `train_dataset`, `train_image_root`, `val_dataset`, `val_image_root`: Path to the list file of train/val dataset and to the root
-  2. `num_gpus` and corresponding IDs of GPUs(`CUDA_VISIBLE_DEVICES` at the first line)
+  - `train_dataset`, `train_image_root`, `val_dataset`, `val_image_root`: Path to the list file of train/val dataset and to the root
+  - `num_gpus` and corresponding IDs of GPUs(`CUDA_VISIBLE_DEVICES` at the first line)
 2. Run!
-  1. `./train_scratch.sh` or `./train.sh`
+  - `./train_scratch.sh` or `./train.sh`
 
 
