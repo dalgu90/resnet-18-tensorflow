@@ -14,13 +14,12 @@ A TensorFlow implementation of ResNet-18(https://arxiv.org/abs/1512.03385)
 
 - (Optional) Convert torch .t7 into tensorflow ckpt
 ```
-# Download torch
+# Download the ResNet-18 torch checkpoint 
 wget https://d2j0dndfm35trm.cloudfront.net/resnet-18.t7
-
-# Convert .t7 into tensorflow checkpoint
+# Convert into tensorflow checkpoint
 python extract_torch_t7.py
 ```
-1. Modify `train_scratch.sh` or `train.sh` to have valid values of following arguments
+1. Modify `train_scratch.sh`(training from scratch) or `train.sh`(finetune pretrained weights) to have valid values of following arguments
   - `train_dataset`, `train_image_root`, `val_dataset`, `val_image_root`: Path to the list file of train/val dataset and to the root
   - `num_gpus` and corresponding IDs of GPUs(`CUDA_VISIBLE_DEVICES` at the first line)
 2. Run!
