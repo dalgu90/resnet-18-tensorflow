@@ -14,7 +14,7 @@ A TensorFlow implementation of ResNet-18(https://arxiv.org/abs/1512.03385)
 
 - (Optional) Convert torch .t7 into tensorflow ckpt
 ```
-# Download the ResNet-18 torch checkpoint 
+# Download the ResNet-18 torch checkpoint
 wget https://d2j0dndfm35trm.cloudfront.net/resnet-18.t7
 # Convert into tensorflow checkpoint
 python extract_torch_t7.py

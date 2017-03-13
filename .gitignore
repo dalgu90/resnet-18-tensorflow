@@ -62,5 +62,6 @@ cifar-100-binary*
 !eval.sh
 
 # Trained checkpoints
+resnet-18.t7
 init*
 resnet_baseline*
