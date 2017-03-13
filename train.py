@@ -150,7 +150,7 @@ def train():
         elif FLAGS.basemodel:
             # Define a different saver to save model checkpoints
             print('Load parameters from basemodel %s' % FLAGS.basemodel)
-            variables = tf.all_variables()
+            variables = tf.global_variables()
             vars_restore = [var for var in variables
                             if not "Momentum" in var.name and
                                not "global_step" in var.name]

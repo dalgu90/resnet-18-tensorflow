@@ -71,6 +71,17 @@ def read_input_file(txt_fpath, dataset_root, shuffle=False):
   return result
 
 
+def resize_image(input_image):
+  # Resize image so that the shorter side is 256
+  height_orig = tf.shape(input_image)[0]
+  width_orig = tf.shape(input_image)[1]
+  ratio_flag = tf.greater(height_orig, width_orig)
+  width = tf.where(ratio_flag, RESIZE_SIZE, tf.cast(RESIZE_SIZE*width_orig/height_orig, tf.int32))
+  height = tf.where(ratio_flag, tf.cast(RESIZE_SIZE*height_orig/width_orig, tf.int32), RESIZE_SIZE)
+  image = tf.image.resize_images(input_image, [height, width])
+  return image
+
+
 def preprocess_image(input_image):
   # Preprocess the image: resize -> mean subtract -> channel swap (-> transpose X -> scale X)
   image = tf.cast(input_image, tf.float32)
@@ -162,7 +173,9 @@ def distorted_inputs(dataset_root, txt_fpath, batch_size, shuffle=True, num_thre
   images_list, labels_list = ([], [])
 
   for i in range(num_sets):
-    distorted_image = tf.cast(read_input.image, tf.float32)
+    image = resize_image(read_input.image)
+
+    distorted_image = tf.cast(image, tf.float32)
     # distorted_image = tf.Print(distorted_image, [read_input.image_path])
 
     height = IMAGE_HEIGHT
@@ -226,7 +239,9 @@ def inputs(dataset_root, txt_fpath, batch_size, shuffle=False, num_threads=60, n
   images_list, labels_list = ([], [])
 
   for i in range(num_sets):
-    image = tf.cast(read_input.image, tf.float32)
+    image = resize_image(read_input.image)
+
+    image = tf.cast(image, tf.float32)
     height = IMAGE_HEIGHT
     width = IMAGE_WIDTH
     if not center_crop:
