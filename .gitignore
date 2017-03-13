@@ -1,0 +1,65 @@
+## General
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.cuo
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Compiled protocol buffers
+*.pb.h
+*.pb.cc
+*_pb2.py
+
+# Compiled python
+*.pyc
+
+# Compiled MATLAB
+*.mex*
+
+# IPython notebook checkpoints
+.ipynb_checkpoints
+
+# Editor temporaries
+*.swp
+*~
+
+# Sublime Text settings
+*.sublime-workspace
+*.sublime-project
+
+# Eclipse Project settings
+*.*project
+.settings
+
+# QtCreator files
+*.user
+
+# PyCharm files
+.idea
+
+# OSX dir files
+.DS_Store
+
+## Project specific
+# CIFAR-100 dataset
+cifar-100-binary*
+
+# Training & evaluation shell files
+*.sh
+!train.sh
+!train_scratch.sh
+!finetune.sh
+!eval.sh
+
+# Trained checkpoints
+wrn*
