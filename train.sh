@@ -17,10 +17,10 @@ python train.py --train_dir $train_dir \
     --val_interval 1000 \
     --val_iter 100 \
     --l2_weight 0.0001 \
-    --initial_lr 0.001 \
-    --lr_step_epoch 100.0 \
+    --initial_lr 0.01 \
+    --lr_step_epoch 5.0 \
     --lr_decay 0.1 \
-    --max_steps 10000 \
+    --max_steps 100000 \
     --checkpoint_interval 5000 \
     --gpu_fraction 0.96 \
     --display 100 \
@@ -28,4 +28,4 @@ python train.py --train_dir $train_dir \
     #--finetune True \
 
 # ResNet-18 baseline loaded from torch resnet-18.t7
-# Finetune for 2 epochs
+# Finetune for 10 epochs
