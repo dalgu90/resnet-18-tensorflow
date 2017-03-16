@@ -14,12 +14,13 @@ from __future__ import print_function
 
 import tensorflow as tf
 import cPickle as pickle
+import numpy as np
 
 from tensorflow.python.platform import gfile
 
-RESNET_MEAN_FPATH = 'ResNet_mean_rgb.pkl'
-with open(RESNET_MEAN_FPATH, 'rb') as fd:
-    resnet_mean = pickle.load(fd).mean(0).mean(0)
+# RESNET_MEAN_FPATH = 'ResNet_mean_rgb.pkl'
+# with open(RESNET_MEAN_FPATH, 'rb') as fd:
+    # resnet_mean = pickle.load(fd).mean(0).mean(0)
 
 # Constants used in the model
 RESIZE_SIZE = 256
@@ -71,20 +72,62 @@ def read_input_file(txt_fpath, dataset_root, shuffle=False):
   return result
 
 
-def resize_image(input_image):
+def resize_image(input_image, random_aspect=False):
   # Resize image so that the shorter side is 256
   height_orig = tf.shape(input_image)[0]
   width_orig = tf.shape(input_image)[1]
-  ratio_flag = tf.greater(height_orig, width_orig)
-  width = tf.where(ratio_flag, RESIZE_SIZE, tf.cast(RESIZE_SIZE*width_orig/height_orig, tf.int32))
-  height = tf.where(ratio_flag, tf.cast(RESIZE_SIZE*height_orig/width_orig, tf.int32), RESIZE_SIZE)
+  ratio_flag = tf.greater(height_orig, width_orig)  # True if height > width
+  if random_aspect:
+    aspect_ratio = tf.random_uniform([], minval=0.875, maxval=1.2, dtype=tf.float64)
+    height = tf.where(ratio_flag, tf.cast(RESIZE_SIZE*height_orig/width_orig*aspect_ratio, tf.int32), RESIZE_SIZE)
+    width = tf.where(ratio_flag, RESIZE_SIZE, tf.cast(RESIZE_SIZE*width_orig/height_orig*aspect_ratio, tf.int32))
+  else:
+    height = tf.where(ratio_flag, tf.cast(RESIZE_SIZE*height_orig/width_orig, tf.int32), RESIZE_SIZE)
+    width = tf.where(ratio_flag, RESIZE_SIZE, tf.cast(RESIZE_SIZE*width_orig/height_orig, tf.int32))
   image = tf.image.resize_images(input_image, [height, width])
+  return image
+
+
+def random_sized_crop(input_image):
+  # Input image -> crop with random size and random aspect ratio
+  height_orig = tf.cast(tf.shape(input_image)[0], tf.float64)
+  width_orig = tf.cast(tf.shape(input_image)[1], tf.float64)
+
+  aspect_ratio = tf.random_uniform([], minval=0.75, maxval=1.33, dtype=tf.float64)
+  height_max = tf.minimum(height_orig, width_orig*aspect_ratio)
+  height_crop = tf.random_uniform([], minval=tf.minimum(height_max, tf.maximum(0.5*height_orig, 0.5*height_max))
+                                  , maxval=height_max, dtype=tf.float64)
+  width_crop = height_crop / aspect_ratio
+  height_crop = tf.cast(height_crop, tf.int32)
+  width_crop = tf.cast(width_crop, tf.int32)
+
+  crop = tf.random_crop(input_image, [height_crop, width_crop, 3])
+
+  # Resize to 224x224
+  image = tf.image.resize_images(crop, [IMAGE_HEIGHT, IMAGE_WIDTH])
+
+  return image
+
+
+def lighting(input_image):
+  # Lighting noise (AlexNet-style PCA-based noise) from torch code
+  # https://github.com/facebook/fb.resnet.torch/blob/master/datasets/transforms.lua
+  alphastd = 0.1
+  eigval = np.array([0.2175, 0.0188, 0.0045], dtype=np.float32)
+  eigvec = np.array([[-0.5675,  0.7192,  0.4009],
+                     [-0.5808, -0.0045, -0.8140],
+                     [-0.5836, -0.6948,  0.4203]], dtype=np.float32)
+
+  alpha = tf.random_normal([3, 1], mean=0.0, stddev=alphastd)
+  rgb = alpha * (eigval.reshape([3, 1]) * eigvec)
+  image = input_image + tf.reduce_sum(rgb, axis=0)
+
   return image
 
 
 def preprocess_image(input_image):
   # Preprocess the image: resize -> mean subtract -> channel swap (-> transpose X -> scale X)
-  image = tf.cast(input_image, tf.float32)
+  # image = tf.cast(input_image, tf.float32)
   # image = tf.image.resize_images(image, [IMAGE_HEIGHT, IMAGE_WIDTH])
   # image_R, image_G, image_B = tf.split(2, 3, image)
 
@@ -96,13 +139,18 @@ def preprocess_image(input_image):
 
   # 2) Subtract per-pixel mean(the model have to 224 x 224 size input)
   # image = tf.concat(2, [image_B, image_G, image_R]) - resnet_mean
-  image = image - resnet_mean
+  # image = image - resnet_mean
 
   # image = tf.concat(2, [image_R, image_G, image_B]) # BGR -> RGB
   # imagenet_mean = tf.constant(IMAGENET_MEAN, dtype=tf.float32)
   # image = image - imagenet_mean # [224, 224, 3] - [3] (Subtract with broadcasting)
   # image = tf.transpose(image, [2, 0, 1]) # No transpose
   # No scaling
+
+  # NEW: Computed from random subset of ImageNet training images
+  imagenet_mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+  imagenet_std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+  image = (input_image - imagenet_mean) / imagenet_std
 
   return image
 
@@ -139,9 +187,6 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
         capacity=min_queue_examples + 20 * batch_size,
         min_after_dequeue=min_queue_examples)
 
-  # Display the training images in the visualizer.
-  #tf.image_summary('images', images)
-
   return images, label_batch
 
 
@@ -173,29 +218,31 @@ def distorted_inputs(dataset_root, txt_fpath, batch_size, shuffle=True, num_thre
   images_list, labels_list = ([], [])
 
   for i in range(num_sets):
-    image = resize_image(read_input.image)
+    # image = resize_image(read_input.image, True)
 
-    distorted_image = tf.cast(image, tf.float32)
-    # distorted_image = tf.Print(distorted_image, [read_input.image_path])
+    image = random_sized_crop(read_input.image)
+    distorted_image = tf.image.convert_image_dtype(image, tf.float32)
 
-    height = IMAGE_HEIGHT
-    width = IMAGE_WIDTH
+    # height = IMAGE_HEIGHT
+    # width = IMAGE_WIDTH
 
     # Image processing for training the network. Note the many random
     # distortions applied to the image.
 
     # Randomly crop a [height, width] section of the image.
-    distorted_image = tf.random_crop(distorted_image, [height, width, 3])
+    # distorted_image = tf.random_crop(distorted_image, [height, width, 3])
 
     # Randomly flip the image horizontally.
     distorted_image = tf.image.random_flip_left_right(distorted_image)
 
     # Because these operations are not commutative, consider randomizing
     # randomize the order their operation.
-    distorted_image = tf.image.random_brightness(distorted_image,
-                                                 max_delta=63)
-    distorted_image = tf.image.random_contrast(distorted_image,
-                                               lower=0.2, upper=1.8)
+    distorted_image = tf.image.random_brightness(distorted_image, max_delta=0.4)
+    distorted_image = tf.image.random_contrast(distorted_image, lower=0.6, upper=1.4)
+    distorted_image = tf.image.random_saturation(distorted_image, lower=0.6, upper=1.4)
+
+    # Lighting noise
+    # distorted_image = lighting(distorted_image)
 
     # Preprocess the image
     distorted_image = preprocess_image(distorted_image)
@@ -208,7 +255,6 @@ def distorted_inputs(dataset_root, txt_fpath, batch_size, shuffle=True, num_thre
     labels_list.append(labels)
 
   return images_list, labels_list
-
 
 
 def inputs(dataset_root, txt_fpath, batch_size, shuffle=False, num_threads=60, num_sets=1, center_crop=False):
@@ -241,7 +287,7 @@ def inputs(dataset_root, txt_fpath, batch_size, shuffle=False, num_threads=60, n
   for i in range(num_sets):
     image = resize_image(read_input.image)
 
-    image = tf.cast(image, tf.float32)
+    image = tf.image.convert_image_dtype(image, tf.float32)
     height = IMAGE_HEIGHT
     width = IMAGE_WIDTH
     if not center_crop:

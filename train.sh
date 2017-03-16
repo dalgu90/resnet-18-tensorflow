@@ -18,7 +18,7 @@ python train.py --train_dir $train_dir \
     --val_iter 100 \
     --l2_weight 0.0001 \
     --initial_lr 0.01 \
-    --lr_step_epoch 5.0 \
+    --lr_step_epoch 10.0 \
     --lr_decay 0.1 \
     --max_steps 100000 \
     --checkpoint_interval 5000 \
