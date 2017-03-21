@@ -6,9 +6,9 @@ A TensorFlow implementation of ResNet-18(https://arxiv.org/abs/1512.03385)
 
 1. TensorFlow 1.0
 2. The ImageNet dataset
-  1. All image files are required to be valid JPEG files. See [this gist](https://gist.github.com/dalgu90/fc358fdde0a7fe6fbbe0254b901a0de3).
-  2. It is highly recommened for every image to be resized so that the shorter side is 256.
-3. (Optional) [Torchfile](https://github.com/bshillingford/python-torchfile)(to convert ResNet-18 .t7 checkpoint into tensorflow checkpoint `pip install torchfile`)
+  - All image files are required to be valid JPEG files. See [this gist](https://gist.github.com/dalgu90/fc358fdde0a7fe6fbbe0254b901a0de3).
+  - It is highly recommened for every image to be resized so that the shorter side is 256.
+3. (Optional) [Torchfile](https://github.com/bshillingford/python-torchfile)(to convert ResNet-18 .t7 checkpoint into tensorflow checkpoint. Install with a command `pip install torchfile`)
 
 <b>How To Run</b>
 
