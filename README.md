@@ -23,6 +23,8 @@ python extract_torch_t7.py
   - `train_dataset`, `train_image_root`, `val_dataset`, `val_image_root`: Path to the list file of train/val dataset and to the root
   - `num_gpus` and corresponding IDs of GPUs(`CUDA_VISIBLE_DEVICES` at the first line)
 2. Run!
-  - `./train_scratch.sh` or `./train.sh`
-
+  - `./train.sh` if you want to finetune the converted ResNet(NOTE: The model needs to be finetuned for some epochs)
+  - `./train_scratch.sh` if you want to train ResNet from scratch
+3. Evaluate the trained model
+  - `./eval.sh` for evaluating the trained model(change the arguments in `eval.sh` to your preference)
 
