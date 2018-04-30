@@ -28,3 +28,6 @@ python extract_torch_t7.py
 3. Evaluate the trained model
   - `./eval.sh` for evaluating the trained model(change the arguments in `eval.sh` to your preference)
 
+<b>Note</b>
+
+- The extracted weights should be finetuned for several epochs(run `./train.sh`) to get the full performance(If you run the evaluation code without finetuning, the single-crop top-1 validation accuracy is about 60%, which is less than the appeared in [the original](https://github.com/facebook/fb.resnet.torch)). I guess there is some minor issue that I have missed.
