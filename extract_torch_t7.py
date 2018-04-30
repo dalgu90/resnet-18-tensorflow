@@ -256,8 +256,10 @@ with tf.Graph().as_default():
 
     # Set variables values
     print('Set variables to loaded weights')
-    all_vars = tf.trainable_variables()
+    all_vars = tf.global_variables()
     for v in all_vars:
+        if v.op.name == 'global_step':
+            continue
         print('\t' + v.op.name)
         assign_op = v.assign(model_weights[v.op.name])
         sess.run(assign_op)
