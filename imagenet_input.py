@@ -148,8 +148,8 @@ def preprocess_image(input_image):
   # No scaling
 
   # NEW: Computed from random subset of ImageNet training images
-  imagenet_mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
-  imagenet_std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+  imagenet_mean = np.array([0.485, 0.456, 0.406], dtype=np.float32) * 255.0
+  imagenet_std = np.array([0.229, 0.224, 0.225], dtype=np.float32) * 255.0
   image = (input_image - imagenet_mean) / imagenet_std
 
   return image
