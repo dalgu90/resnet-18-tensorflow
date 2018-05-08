@@ -4,7 +4,7 @@ A TensorFlow implementation of ResNet-18(https://arxiv.org/abs/1512.03385)
 
 <b>Prerequisite</b>
 
-1. TensorFlow 1.0
+1. TensorFlow 1.8
 2. The ImageNet dataset
   - All image files are required to be valid JPEG files. See [this gist](https://gist.github.com/dalgu90/fc358fdde0a7fe6fbbe0254b901a0de3).
   - It is highly recommened for every image to be resized so that the shorter side is 256.
