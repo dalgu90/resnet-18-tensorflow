@@ -110,7 +110,7 @@ def train():
             with tf.variable_scope('test_image'):
                 val_images, val_labels = data_input.inputs(FLAGS.val_image_root, FLAGS.val_dataset
                                                , FLAGS.batch_size, False, num_threads=num_threads, num_sets=FLAGS.num_gpus)
-        tf.summary.image('images', train_images[0])
+            tf.summary.image('images', train_images[0][:2])
 
         # Build model
         lr_decay_steps = map(float,FLAGS.lr_step_epoch.split(','))
